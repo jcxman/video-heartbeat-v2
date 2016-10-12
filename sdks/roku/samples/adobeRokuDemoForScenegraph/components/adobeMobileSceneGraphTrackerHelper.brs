@@ -30,14 +30,14 @@ End Function
 '************
 
 Function trackAction(actionName as String, actionData as Object)
-    m.tracker.stateEventName = actionName
-    m.tracker.stateEventData = actionData
+    m.tracker.actionEventName = actionName
+    m.tracker.actionEventData = actionData
     m.tracker.trackAction = true
 End Function
 
 Function trackState(stateName as String, stateData as Object)
-    m.tracker.stateName = actionName
-    m.tracker.stateData = actionData
+    m.tracker.stateEventName = stateName
+    m.tracker.stateEventData = stateData
     m.tracker.trackState = true
 End Function
 
@@ -165,8 +165,8 @@ Function trackMediaEvent (mediaEventName as String, mediaEventInfo as Object, me
 End Function
 
 Function trackError(errorMsg as String, errorCode as String)
-    m.tracker.errorMessage = errorMsg
-    m.tracker.errorCode = errorCode
+    m.tracker.mediaErrorMessage = errorMsg
+    m.tracker.mediaErrorCode = errorCode
     m.tracker.mediaTrackError = true
 End Function
 

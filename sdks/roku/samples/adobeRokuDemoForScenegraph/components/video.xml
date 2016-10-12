@@ -22,7 +22,7 @@
 
   <interface>
     <field id = "state" type="string"/>
-    <field id = "streamStarted" type="string"/>
+    <field id = "streamStarted" type="bool"/>
     <field id = "videoPlayer" type="node"/>
     <field id = "adobeTrackerTask" type="node"/>
     <field id = "start" type="int" onchange="startChanged"/>
@@ -42,7 +42,7 @@
     <![CDATA[
 
     sub init()
-      m.top.streamStarted = "false"
+      m.top.streamStarted = false
 
       videocontent = createObject("RoSGNode", "ContentNode")
       videocontent.title = "Example Video"
@@ -60,6 +60,10 @@
 
       initMediaTracker(m.top.adobeTrackerTask)
       runMediaTracker()
+      stateData = {}
+      stateData["key1"] = "val1"
+      stateData["key2"] = "val2"
+      trackState("demo scenegraph", stateData)
     end sub
 
     Sub startChanged()
@@ -70,16 +74,16 @@
         enableDebugLogging() 
 
         '''ad timeline / chapters etc timeline management
-        if m.top.streamStarted = "true"
+        if m.top.streamStarted = true
 
-          if currPosition > 0 and currPosition < 10 and m.top.isInAdBreak = false
+          if currPosition > 5 and currPosition < 10 and m.top.isInAdBreak = false
               currAdBreakInfo = adb_media_init_adbreakinfo("pod1", currPosition, 1)
               currAdBreakContextData = invalid
               trackMediaEvent(ADBMobile().MEDIA_AD_BREAK_START, currAdBreakInfo, currAdBreakContextData)
               m.top.currAdBreakContextData = currAdBreakContextData
               m.top.currAdBreakInfo = currAdBreakInfo
               m.top.isInAdBreak = true
-          else if currPosition > 1 and currPosition < 10 and m.top.isInAdBreak = true and m.top.isInAd = false
+          else if currPosition > 6 and currPosition < 10 and m.top.isInAdBreak = true and m.top.isInAd = false
               currAdInfo = adb_media_init_adinfo("ad1", "ad1_title", 1, 10)
               currAdContextData = {}
               currAdContextData["key1"] = "val1"
@@ -106,13 +110,13 @@
         ? "HomeScene > OnVideoPlayerStateChange : state == ";m.videoPlayer.state
 
         if m.videoPlayer.state = "error"
-          trackError(m.videoPlayer.errorMsg, m.videoPlayer.errorCode)
+          trackError(m.videoPlayer.errorMsg, "video-player-error-code")
           m.videoPlayer.visible = false
 
         else if m.videoPlayer.state = "playing"
             
-          if m.top.streamStarted = "false"
-            m.top.streamStarted = "true"            
+          if m.top.streamStarted = false
+            m.top.streamStarted = true           
 
             mInfo = adb_media_init_mediainfo("test_media_name", "test_media_id", 10, "vod")
             mediaContextData = {}
@@ -125,14 +129,18 @@
             trackMediaPlay()
 
           else if m.videoPlayer.state = "finished"          
-            trackMediaComplete()
-            trackMediaUnload()
-            m.videoPlayer.visible = false
-            m.top.streamStarted = "false" 
+            if m.top.streamStarted = true
+              trackMediaComplete()
+              trackMediaUnload()
+              m.videoPlayer.visible = false
+              m.top.streamStarted = false
+            end if
                     
           else if m.videoPlayer.state = "stopped"
-            trackMediaUnload()
-            m.top.streamStarted = "false"
+            if m.top.streamStarted = true
+              trackMediaUnload()
+              m.top.streamStarted = false
+            end if
           
           else if m.videoPlayer.state = "paused"
             trackMediaPause()
